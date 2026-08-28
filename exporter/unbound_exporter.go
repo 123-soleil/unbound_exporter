@@ -46,6 +46,11 @@ var (
 		"Metadata about the running Unbound server.",
 		[]string{"version", "threads", "modules"}, nil)
 
+	unboundNumThreadsDesc = prometheus.NewDesc(
+		prometheus.BuildFQName("unbound", "", "num_threads"),
+		"Number of Unbound threads observed in the current stats snapshot.",
+		nil, nil)
+
 	unboundMetrics = []metricDescription{
 		{
 			"answer_rcodes_total",
@@ -108,7 +113,7 @@ var (
 			"Total number of queries with a invalid cookie.",
 			prometheus.CounterValue,
 			[]string{"thread"},
-			"^thread(\\d+)\\.num\\.queries_invalid_client$",
+			"^thread(\\d+)\\.num\\.queries_cookie_invalid$",
 		},
 		{
 			"queries_cookie_valid_total",
@@ -211,6 +216,13 @@ var (
 		{
 			"query_tcpout_total",
 			"Total number of queries that the Unbound server made using TCP outgoing towards other servers.",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.query\\.tcpout$",
+		},
+		{
+			"query_tcp_out_total",
+			"Total number of queries that the Unbound server made using TCP outgoing towards other servers (alternative name).",
 			prometheus.CounterValue,
 			nil,
 			"^num\\.query\\.tcpout$",
@@ -399,7 +411,7 @@ var (
 		},
 		{
 			"infra_cache_count",
-			"Total number of infra cache entries",
+			"Total number of infra cache entries (legacy counter metric, kept for backward compatibility).",
 			prometheus.CounterValue,
 			nil,
 			"^infra\\.cache\\.count$",
@@ -453,6 +465,160 @@ var (
 			nil,
 			"^num\\.valops$",
 		},
+		{
+			"queries_ip_ratelimited_total",
+			"Total number of queries that were rate limited by IP.",
+			prometheus.CounterValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.num\\.queries_ip_ratelimited$",
+		},
+		{
+			"queries_timed_out_total",
+			"Total number of queries that timed out.",
+			prometheus.CounterValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.num\\.queries_timed_out$",
+		},
+		{
+			"query_queue_time_us_max",
+			"Maximum time spent in the query queue in microseconds.",
+			prometheus.GaugeValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.query\\.queue_time_us\\.max$",
+		},
+		{
+			"dnscrypt_crypted_total",
+			"Total number of DNSCrypt encrypted queries.",
+			prometheus.CounterValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.num\\.dnscrypt\\.crypted$",
+		},
+		{
+			"dnscrypt_cert_total",
+			"Total number of DNSCrypt certificate queries.",
+			prometheus.CounterValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.num\\.dnscrypt\\.cert$",
+		},
+		{
+			"dnscrypt_cleartext_total",
+			"Total number of DNSCrypt cleartext queries.",
+			prometheus.CounterValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.num\\.dnscrypt\\.cleartext$",
+		},
+		{
+			"dnscrypt_malformed_total",
+			"Total number of DNSCrypt malformed queries.",
+			prometheus.CounterValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.num\\.dnscrypt\\.malformed$",
+		},
+		{
+			"request_list_avg",
+			"Average size of the request list.",
+			prometheus.GaugeValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.requestlist\\.avg$",
+		},
+		{
+			"request_list_max",
+			"Maximum size of the request list.",
+			prometheus.GaugeValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.requestlist\\.max$",
+		},
+		{
+			"recursion_time_seconds_avg_per_thread",
+			"Average time it took to answer queries that needed recursive processing per thread.",
+			prometheus.GaugeValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.recursion\\.time\\.avg$",
+		},
+		{
+			"recursion_time_seconds_median_per_thread",
+			"Median time it took to answer queries that needed recursive processing per thread.",
+			prometheus.GaugeValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.recursion\\.time\\.median$",
+		},
+		{
+			"tcp_usage",
+			"TCP usage per thread.",
+			prometheus.GaugeValue,
+			[]string{"thread"},
+			"^thread(\\d+)\\.tcpusage$",
+		},
+		{
+			"key_cache_count",
+			"Number of keys cached.",
+			prometheus.GaugeValue,
+			nil,
+			"^key\\.cache\\.count$",
+		},
+		{
+			"dnscrypt_shared_secret_cache_count",
+			"Number of DNSCrypt shared secrets cached.",
+			prometheus.GaugeValue,
+			nil,
+			"^dnscrypt_shared_secret\\.cache\\.count$",
+		},
+		{
+			"dnscrypt_nonce_cache_count",
+			"Number of DNSCrypt nonces cached.",
+			prometheus.GaugeValue,
+			nil,
+			"^dnscrypt_nonce\\.cache\\.count$",
+		},
+		{
+			"memory_streamwait_bytes",
+			"Memory in bytes used by stream wait.",
+			prometheus.GaugeValue,
+			nil,
+			"^mem\\.streamwait$",
+		},
+		{
+			"query_dnscrypt_shared_secret_cachemiss_total",
+			"Total number of DNSCrypt shared secret cache misses.",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.query\\.dnscrypt\\.shared_secret\\.cachemiss$",
+		},
+		{
+			"query_dnscrypt_replay_total",
+			"Total number of DNSCrypt replay queries.",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.query\\.dnscrypt\\.replay$",
+		},
+		{
+			"query_authzone_up_total",
+			"Total number of queries to auth zones that were up.",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.query\\.authzone\\.up$",
+		},
+		{
+			"query_authzone_down_total",
+			"Total number of queries to auth zones that were down.",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.query\\.authzone\\.down$",
+		},
+		{
+			"query_ratelimited_total",
+			"Total number of queries that were rate limited.",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.query\\.ratelimited$",
+		},
+		{
+			"answers_bogus_total",
+			"Total number of answers that were bogus (alternative name).",
+			prometheus.CounterValue,
+			nil,
+			"^num\\.answer\\.bogus$",
+		}
 	}
 )
 
@@ -488,6 +654,8 @@ func collectFromReader(metrics []unboundMetric, file io.Reader, ch chan<- promet
 	histogramCount := uint64(0)
 	histogramAvg := float64(0)
 	histogramBuckets := make(map[float64]uint64)
+	threadPattern := regexp.MustCompile(`^thread(\d+)\.`)
+	threadsSet := make(map[string]bool)
 
 	for scanner.Scan() {
 		fields := strings.Split(scanner.Text(), "=")
@@ -495,6 +663,11 @@ func collectFromReader(metrics []unboundMetric, file io.Reader, ch chan<- promet
 			return fmt.Errorf(
 				"%q is not a valid key-value pair",
 				scanner.Text())
+		}
+
+		// Check for thread metrics to count total threads
+		if matches := threadPattern.FindStringSubmatch(fields[0]); matches != nil {
+			threadsSet[matches[1]] = true
 		}
 
 		for _, metric := range metrics {
@@ -553,6 +726,12 @@ func collectFromReader(metrics []unboundMetric, file io.Reader, ch chan<- promet
 		histogramAvg*float64(histogramCount),
 		histogramBuckets)
 
+	// Emit the number of threads metric
+	ch <- prometheus.MustNewConstMetric(
+		unboundNumThreadsDesc,
+		prometheus.GaugeValue,
+		float64(len(threadsSet)))
+
 	return scanner.Err()
 }
 
@@ -593,6 +772,7 @@ func collectInfoFromReader(file io.Reader, ch chan<- prometheus.Metric) error {
 
 	ch <- prometheus.MustNewConstMetric(
 		unboundInfoDesc,
+
 		prometheus.GaugeValue,
 		1.0,
 		version, threads, modules)
