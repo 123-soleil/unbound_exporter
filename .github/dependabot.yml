@@ -5,10 +5,10 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    insecure-external-code-execution: allow
+    insecure-external-code-execution: deny
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-    insecure-external-code-execution: allow
+    insecure-external-code-execution: deny
