@@ -1,10 +1,12 @@
 version: 2
 updates:
-  - package-ecosystem: "go"
+  - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "monthly"
-  - package-ecosystem: "github-actions"
+      interval: "weekly"
+      day: "monday"
+  - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "monday"
