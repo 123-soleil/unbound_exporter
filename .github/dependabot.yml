@@ -5,10 +5,12 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      cooldown: default-days
     insecure-external-code-execution: deny
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
+      cooldown: default-days
     insecure-external-code-execution: deny
