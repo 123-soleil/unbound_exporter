@@ -13,7 +13,7 @@ enabled modules as labels on the `unbound_info` metric.
 
 # Prerequisites
 
-Go 1.24 or above is required.
+Go 1.25 or above is required.
 
 # Installation
 
