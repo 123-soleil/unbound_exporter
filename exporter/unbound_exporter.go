@@ -618,7 +618,7 @@ var (
 			prometheus.CounterValue,
 			nil,
 			"^num\\.answer\\.bogus$",
-		}
+		},
 	}
 )
 
@@ -670,6 +670,9 @@ func collectFromReader(metrics []unboundMetric, file io.Reader, ch chan<- promet
 			threadsSet[matches[1]] = true
 		}
 
+		// No break on match: some stats lines are intentionally matched by
+		// more than one entry in unboundMetrics (e.g. "alternative name"
+		// aliases), and all matching entries must emit a value.
 		for _, metric := range metrics {
 			if matches := metric.pattern.FindStringSubmatch(fields[0]); matches != nil {
 				value, err := strconv.ParseFloat(fields[1], 64)
@@ -681,8 +684,6 @@ func collectFromReader(metrics []unboundMetric, file io.Reader, ch chan<- promet
 					metric.valueType,
 					value,
 					matches[1:]...)
-
-				break
 			}
 		}
 
