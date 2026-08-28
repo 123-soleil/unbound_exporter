@@ -54,6 +54,24 @@ The more complicated way to run unbound_exporter is to configure unbound's contr
 
 See https://unbound.docs.nlnetlabs.nl/en/latest/getting-started/configuration.html#set-up-remote-control for instructions on setting up the certificates and keys for remote-control via TLS. On the unbound_exporter side you will need to set the `-unbound.ca`, `-unbound.cert`, and `-unbound.key` flags to point to valid files that will trust the Unbound server's certificate and be trusted by Unbound in return.
 
+Note that this only secures the connection from unbound_exporter to Unbound. By default the exporter's own `/metrics` endpoint is served over plain HTTP; see the next section to secure that side too.
+
+# Usage - TLS/mTLS on the metrics endpoint
+
+The web interface (`/metrics`, `/_healthz`, `/`) is served in plain HTTP by default. To serve it over TLS, or to require Prometheus to authenticate with a client certificate (mTLS), pass `-web.config.file` pointing to a config file in the format documented at https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md.
+
+Minimal example enabling mTLS:
+
+```yaml
+tls_server_config:
+  cert_file: server.crt
+  key_file: server.key
+  client_auth_type: RequireAndVerifyClientCert
+  client_ca_file: ca.crt
+```
+
+    unbound_exporter -web.config.file web-config.yml ...
+
 # Extended statistics
 
 From the Unbound [statistics doc](https://www.nlnetlabs.nl/documentation/unbound/howto-statistics/): Unbound has an option to enable extended statistics collection. If enabled, more statistics are collected, for example what types of queries are sent to the resolver. Otherwise, only the total number of queries is collected. Add the following to your `unbound.conf`.

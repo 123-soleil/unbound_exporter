@@ -3,11 +3,13 @@ package metrics
 import (
 	"bytes"
 	"html/template"
+	"log/slog"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/exporter-toolkit/web"
 
 	"github.com/letsencrypt/unbound_exporter/exporter"
 )
@@ -42,8 +44,11 @@ func homePageText(metricsPath, healthPath string) []byte {
 	return out.Bytes()
 }
 
-// NewMetricServer starts the http server on listenAddress
-func NewMetricServer(listenAddress, metricsPath, healthPath string, exp *exporter.UnboundExporter) error {
+// NewMetricServer starts the http server on listenAddress. If webConfigFile
+// is non-empty, it is used to enable TLS (and optionally mTLS via
+// client_auth_type/client_ca_file) as documented at
+// https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md.
+func NewMetricServer(listenAddress, webConfigFile, metricsPath, healthPath string, exp *exporter.UnboundExporter, log *slog.Logger) error {
 	prometheus.MustRegister(exp)
 	prometheus.MustRegister(version.NewCollector("unbound_exporter"))
 
@@ -66,5 +71,10 @@ func NewMetricServer(listenAddress, metricsPath, healthPath string, exp *exporte
 		_, _ = w.Write(renderedHomePage)
 	})
 
-	return http.ListenAndServe(listenAddress, mux)
+	server := &http.Server{Handler: mux}
+	flagConfig := &web.FlagConfig{
+		WebListenAddresses: &[]string{listenAddress},
+		WebConfigFile:      &webConfigFile,
+	}
+	return web.ListenAndServe(server, flagConfig, log)
 }

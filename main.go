@@ -30,6 +30,7 @@ func main() {
 		listenAddress = flag.String("web.listen-address", ":9167", "Address to listen on for web interface and telemetry.")
 		metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 		healthPath    = flag.String("web.health-path", "/_healthz", "Path under which to expose healthcheck.")
+		webConfigFile = flag.String("web.config.file", "", "Path to a web config file enabling TLS or mTLS on the web interface. See: https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md")
 		unboundHost   = flag.String("unbound.host", "tcp://localhost:8953", "Unix or TCP address of Unbound control socket.")
 		unboundCa     = flag.String("unbound.ca", "/etc/unbound/unbound_server.pem", "Unbound server certificate.")
 		unboundCert   = flag.String("unbound.cert", "/etc/unbound/unbound_control.pem", "Unbound client certificate.")
@@ -45,7 +46,7 @@ func main() {
 	}
 
 	log.Info("Starting server", "address", *listenAddress)
-	err = metrics.NewMetricServer(*listenAddress, *metricsPath, *healthPath, exp)
+	err = metrics.NewMetricServer(*listenAddress, *webConfigFile, *metricsPath, *healthPath, exp, log)
 	if err != nil {
 		log.Error("Listen failed", "err", err.Error())
 		os.Exit(1)
