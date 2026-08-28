@@ -17,7 +17,7 @@ Go 1.24 or above is required.
 
 # Installation
 
-    go install github.com/letsencrypt/unbound_exporter@latest
+    go install github.com/123-soleil/unbound_exporter@latest
 
 This will install the binary in `$GOBIN`, or `$HOME/go/bin` if
 `$GOBIN` is unset.
